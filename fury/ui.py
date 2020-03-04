@@ -3405,6 +3405,9 @@ class ListBox2D(UI):
         super(ListBox2D, self).__init__()
 
         denom = len(self.values) - self.nb_slots
+        # Compressing the values to avoid text overflow in listbox
+        self.compressed_values = self.compress_values(values)
+        denom = len(self._values) - self.nb_slots
         if not denom:
             denom += 1
         self.scroll_step_size = (self.slot_height * self.nb_slots -
@@ -3438,7 +3441,7 @@ class ListBox2D(UI):
 
         # Add a scroll bar
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
-            / len(self.values)
+            // len(self._values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
                                       scroll_bar_height))
         if len(self.values) <= self.nb_slots:
@@ -3449,6 +3452,7 @@ class ListBox2D(UI):
         # Initialisation of empty text actors
         slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
+        self.slot_width = slot_width
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
@@ -3672,7 +3676,7 @@ class ListBox2D(UI):
         self.scroll_bar.set_visibility(True)
 
         self.scroll_bar.height = self.nb_slots * \
-            (self.panel_size[1] - 2 * self.margin) / len(self.values)
+            (self.panel_size[1] - 2 * self.margin) // len(self._values)
 
         self.scroll_step_size = (self.slot_height * self.nb_slots -
                                  self.scroll_bar.height) \
@@ -3707,7 +3711,8 @@ class ListBox2D(UI):
             multi_select is True.
 
         """
-        selection_idx = self.values.index(item.element)
+        actual_value = self.get_actual_value(item.element)
+        selection_idx = self._values.index(actual_value)
         if self.multiselection and range_select:
             self.clear_selection()
             step = 1 if selection_idx >= self.last_selection_idx else -1
@@ -3730,6 +3735,42 @@ class ListBox2D(UI):
 
         self.on_change()  # Call hook.
         self.update()
+        
+    def compress_values(self, values):
+        """ Compressing the listboxitem element to fit into textbox
+
+        Parameters
+        ----------
+        values: :class:`ListBox2D`
+        """
+        compressed_names = []
+        textblock_width = self.slots[0].textblock.size[0]
+        for value in values:
+            char_width = textblock_width - self.margin
+            permissible_chars = int(self.slot_width)//char_width
+            total_chars = len(str(value))
+            if total_chars > permissible_chars:
+                excess_chars = total_chars - permissible_chars
+                wrapped_value = value[:int(-excess_chars) - 3] + "..."
+                compressed_names.append(wrapped_value)
+            else:
+                compressed_names.append(value)
+        return compressed_names
+    
+    def set_values(self, values):
+        self._values = values
+        self.compressed_values = self.compress_values(values)
+
+    def get_actual_value(self, compressed_value):
+        """ Retrieving the actual value of element by compressed value. 
+         Parameters
+        ----------
+        compressed_value:the key for the actual value
+        """
+        for i in range(len(self.compressed_values)):
+            if(self.compressed_values[i]==compressed_value):
+                return self._values[i]
+        return ""
 
 
 class ListBoxItem2D(UI):
@@ -4068,7 +4109,8 @@ class FileMenu2D(UI):
             The picked actor
         listboxitem: :class:`ListBoxItem2D`
         """
-        if (listboxitem.element, "directory") in self.directory_contents:
+        if (self.listbox.get_actual_value(listboxitem.element),
+            "directory") in self.directory_contents:
             new_directory_path = os.path.join(self.current_directory,
                                               listboxitem.element)
             if os.access(new_directory_path, os.R_OK):
