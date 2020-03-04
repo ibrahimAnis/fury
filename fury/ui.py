@@ -3398,13 +3398,13 @@ class ListBox2D(UI):
         self.background_opacity = background_opacity
 
         # self.panel.resize(size)
-        self.values = values
+        self._values = values
         self.multiselection = multiselection
         self.last_selection_idx = 0
         self.reverse_scrolling = reverse_scrolling
         super(ListBox2D, self).__init__()
 
-        denom = len(self.values) - self.nb_slots
+        denom = len(self._values) - self.nb_slots
         # Compressing the values to avoid text overflow in listbox
         self.compressed_values = self.compress_values(values)
         denom = len(self._values) - self.nb_slots
@@ -3444,7 +3444,7 @@ class ListBox2D(UI):
             // len(self._values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
                                       scroll_bar_height))
-        if len(self.values) <= self.nb_slots:
+        if len(self._values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
         self.panel.add_element(
             self.scroll_bar, size - self.scroll_bar.size - self.margin)
@@ -3564,7 +3564,7 @@ class ListBox2D(UI):
 
         """
         view_end = self.view_offset + self.nb_slots
-        if view_end < len(self.values):
+        if view_end < len(self._values):
             self.view_offset += 1
             self.update()
             scroll_bar_idx = self.panel._elements.index(self.scroll_bar)
@@ -3626,9 +3626,9 @@ class ListBox2D(UI):
             offset = min(offset, self.view_offset)
 
         elif offset < 0 and (
-                self.view_offset + self.nb_slots < len(self.values)):
+                self.view_offset + self.nb_slots < len(self._values)):
             offset = min(-offset,
-                         len(self.values) - self.nb_slots - self.view_offset)
+                         len(self._values) - self.nb_slots - self.view_offset)
             offset = - offset
         else:
             return
@@ -3651,7 +3651,7 @@ class ListBox2D(UI):
         """ Refresh listbox's content. """
         view_start = self.view_offset
         view_end = view_start + self.nb_slots
-        values_to_show = self.values[view_start:view_end]
+        values_to_show = self._values[view_start:view_end]
 
         # Populate slots according to the view.
         for i, choice in enumerate(values_to_show):
@@ -3680,13 +3680,13 @@ class ListBox2D(UI):
 
         self.scroll_step_size = (self.slot_height * self.nb_slots -
                                  self.scroll_bar.height) \
-            / (len(self.values) - self.nb_slots)
+            / (len(self._values) - self.nb_slots)
 
         self.panel.update_element(
             self.scroll_bar, self.panel_size - self.scroll_bar.size -
             self.margin)
 
-        if len(self.values) <= self.nb_slots:
+        if len(self._values) <= self.nb_slots:
             self.scroll_bar.set_visibility(False)
 
     def clear_selection(self):
@@ -3719,7 +3719,7 @@ class ListBox2D(UI):
             for i in range(self.last_selection_idx,
                            selection_idx + step,
                            step):
-                self.selected.append(self.values[i])
+                self.selected.append(self._values[i])
 
         elif self.multiselection and multiselect:
             if item.element in self.selected:
