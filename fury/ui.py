@@ -3293,7 +3293,7 @@ class ListBox2D(UI):
         denom = len(self._values) - self.nb_slots
 
         # Compressing the values to avoid text overflow in listbox
-        self.compressed_values=self.compress_values(values)
+        self.compressed_values = self.compress_values(values)
         denom = len(self._values) - self.nb_slots
         if not denom:
             denom += 1
@@ -3328,7 +3328,7 @@ class ListBox2D(UI):
 
         # Add a scroll bar
         scroll_bar_height = self.nb_slots * (size[1] - 2 * self.margin) \
-            / len(self._values)
+            // len(self._values)
         self.scroll_bar = Rectangle2D(size=(int(size[0]/20),
                                       scroll_bar_height))
         if len(self._values) <= self.nb_slots:
@@ -3339,7 +3339,7 @@ class ListBox2D(UI):
         # Initialisation of empty text actors
         slot_width = size[0] - self.scroll_bar.size[0] - \
             2 * self.margin - self.margin
-        self.slot_width=slot_width
+        self.slot_width = slot_width
         x = self.margin
         y = size[1] - self.margin
         for _ in range(self.nb_slots):
@@ -3541,7 +3541,7 @@ class ListBox2D(UI):
         values_to_show = self.compressed_values[view_start:view_end]
         for i, choice in enumerate(values_to_show):
             slot = self.slots[i]
-            slot.element=choice
+            slot.element = choice
             slot.set_visibility(True)
             if self.get_actual_value(slot.element) in self.selected:
                 slot.select()
@@ -3560,7 +3560,7 @@ class ListBox2D(UI):
         self.scroll_bar.set_visibility(True)
 
         self.scroll_bar.height = self.nb_slots * \
-            (self.panel_size[1] - 2 * self.margin) / len(self._values)
+            (self.panel_size[1] - 2 * self.margin) // len(self._values)
 
         self.scroll_step_size = (self.slot_height * self.nb_slots -
                                  self.scroll_bar.height) \
@@ -3595,7 +3595,7 @@ class ListBox2D(UI):
             multi_select is True.
 
         """
-        actual_value=self.get_actual_value(item.element)
+        actual_value = self.get_actual_value(item.element)
         selection_idx = self._values.index(actual_value)
         if self.multiselection and range_select:
             self.clear_selection()
@@ -3644,7 +3644,7 @@ class ListBox2D(UI):
     def set_values(self, values):
         self._values = values
         self.compressed_values = self.compress_values(values)
-    
+
     def get_actual_value(self, compressed_value):
         """ Retrieving the actual value of element by compressed value.
 
@@ -3987,7 +3987,8 @@ class FileMenu2D(UI):
             The picked actor
         listboxitem: :class:`ListBoxItem2D`
         """
-        if (self.listbox.get_actual_value(listboxitem.element), "directory") in self.directory_contents:
+        if (self.listbox.get_actual_value(listboxitem.element),
+            "directory") in self.directory_contents:
             new_directory_path = os.path.join(self.current_directory,
                                               self.listbox.get_actual_value(listboxitem.element))
             if os.access(new_directory_path, os.R_OK):
